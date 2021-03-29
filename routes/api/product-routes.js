@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
       }
     )
     if (!prods) {
-      res.status(404).json({ message: 'Products not found' })
+      res.status(404).json({ message: 'No products found' })
       return
     }
     res.status(200).json(prods)
@@ -28,17 +28,18 @@ router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
   try {
+    const id = req.params.id
     const prod = await Product.findOne(
       {
         raw: true,
         where: {
-          id: req.params.id
+          id: id
         },
         include: [Category, 'product_tags']
       }
     )
     if (!prod) {
-      res.status(404).json({ message: 'No products found' })
+      res.status(404).json({ message: `No products found with ID ${id}` })
       return
     }
     res.status(200).json(prod)
@@ -132,7 +133,7 @@ router.delete('/:id', async (req, res) => {
       }
     )
     if (!prod) {
-      res.status(404).json({ message: `Product with ID ${req.params.id} not found` })
+      res.status(404).json({ message: `Product ID ${req.params.id} not found` })
       return
     }
     res.status(200).json({ message: `Product ID ${req.params.id} deleted`})

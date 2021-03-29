@@ -10,7 +10,7 @@ router.get('/', async (req, res) => {
     const tags = await Tag.findAll(
       {
         raw: true,
-        include: [Product]
+        include: ['tagged_products']
       }
     )
     if (!tags) {
@@ -30,7 +30,7 @@ router.get('/:id', async (req, res) => {
     const tag = await Tag.findByPk(req.params.id, 
       {
         raw: true,
-        include: [Product]
+        include: ['tagged_products']
       }
     )
     if (!tag) {
@@ -47,16 +47,12 @@ router.post('/', async (req, res) => {
   // create a new tag
   try {
     const name = req.body.tagName
-    const tag = await Tag.create(
-      {
-        tagName: name
-      }
-    )
+    const tag = await Tag.create({ tagName: name })
     if (!tag) {
-      res.status(502).json({ message: `Tag ${name} not created` })
+      res.status(502).json({ message: `Tag "${name}" not created` })
       return
     }
-    res.status(200).json({ message: `Tag ${name} created` })
+    res.status(200).json({ message: `Tag "${name}" created` })
   } catch (err) {
     res.status(500).json(err)
   }
@@ -77,11 +73,11 @@ router.put('/:id', async (req, res) => {
         }
       }
     )
-    if (!tag) {
+    if (tag === 0) {
       res.status(502).json({ message: `Tag with ID ${id} unable to be updated` })
       return
     }
-    res.status(200).json({ message: `Tag ID ${id} updated with name ${name}` })
+    res.status(200).json({ message: `Tag ID ${id} updated with name "${name}"` })
   } catch (err) {
     res.status(500).json(err)
   }
