@@ -9,7 +9,20 @@ router.get('/', async (req, res) => {
   Product.findAll(
     {
       raw: true,
-      include: [Category, 'product_tags']
+      attributes: ['id', 'productName', 'price', 'stock'],
+      include: [
+        {
+          model: Category,
+          attributes: ['categoryName'],
+        },
+        {
+          model: Tag,
+          attributes: ['tagName'],
+          through: {
+            attributes: []
+          }
+        }
+      ]
     }
   )
   .then((prods) => {
@@ -35,7 +48,20 @@ router.get('/:id', (req, res) => {
         where: {
           id: id
         },
-        include: [Category, 'product_tags']
+        attributes: ['id', 'productName', 'price', 'stock'],
+        include: [
+          {
+            model: Category,
+            attributes: ['categoryName']
+          },
+          {
+            model: Tag,
+            through: {
+              attributes: []
+            },
+            attributes: ['tagName']
+          }
+        ]
       }
   )
   .then((prod) => {
@@ -64,11 +90,11 @@ router.post('/', (req, res) => {
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (typeof req.body.tagIds === 'array') {
+      if (req.body.tagIds.length) {
         const productTagIdArr = req.body.tagIds.map((tag_id) => {
           return {
-            product_id: product.id,
-            tag_id: tag_id,
+            productId: product.id,
+            tagId: tag_id,
           };
         });
         return ProductTag.bulkCreate(productTagIdArr);

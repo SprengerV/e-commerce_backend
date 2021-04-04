@@ -9,7 +9,15 @@ router.get('/', (req, res) => {
   Tag.findAll(
     {
       raw: true,
-      include: ['tagged_products']
+      include: [
+        {
+          model: Product,
+          attributes: ['productName'],
+          through: {
+            attributes: []
+          }
+        }
+      ]
     }
   )
   .then((tags) => {
@@ -27,12 +35,21 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   // find a single tag by its `id`
   // be sure to include its associated Product data
-  Tag.findByPk(req.params.id, 
-    {
-      raw: true,
-      include: ['tagged_products']
-    }
-  )
+  Tag.findAll({
+    where: {
+      id: req.params.id
+    },
+    raw: true,
+    include: [
+      {
+        model: Product,
+        attributes: ['productName'],
+        through: {
+          attributes: []
+        }
+      }
+    ]
+  })
   .then((tag) => {
     if (!tag) {
       res.status(404).json({ message: `Tag with ID ${req.params.id} not found`})
@@ -52,10 +69,10 @@ router.post('/', (req, res) => {
   .create({ tagName: name })
   .then((tag) => {
     if (!tag) {
-      res.status(502).json({ message: `Tag "${name}" not created` })
+      res.status(502).json({ message: `Tag not created` })
       return
     }
-    res.status(200).json({ message: `Tag "${name}" created` })
+    res.status(200).json(tag)
   })
   .catch((err) => {
     res.status(500).json(err)
@@ -67,22 +84,19 @@ router.put('/:id', (req, res) => {
   const newName = req.body.tagName
   const id = req.params.id
   Tag
-  .update(
-    {
-      tagName: newName
-    },
+  .update(req.body,
     {
       where: {
         id: id
       }
     }
   )
-  then((tag) => {
-    if (tag === 0) {
+  .then((tag) => {
+    if (!tag) {
       res.status(502).json({ message: `Tag with ID ${id} unable to be updated` })
       return
     }
-    res.status(200).json({ message: `Tag ID ${id} updated with name "${name}"` })
+    res.status(200).json({ message: `Tag ID ${id} updated with name "${newName}"` })
   })
   .catch((err) => {
     res.status(500).json(err)

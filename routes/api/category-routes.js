@@ -9,7 +9,12 @@ router.get('/', (req, res) => {
   Category.findAll(
     {
       raw: true,
-      include: [Product]
+      include: [
+        {
+          model: Product,
+          attributes: ['productName']
+        }
+      ]
     }
   )
   .then((cats) => {
@@ -28,7 +33,15 @@ router.get('/:id', (req, res) => {
   // find one category by its `id` value
   // be sure to include its associated Products
   Category
-  .findByPk(req.params.id)
+  .findAll({
+    where: {
+      id: req.params.id
+    },
+    include: {
+      model: Product,
+      attributes: ['productName']
+    }
+  })
   .then((cats) => {
     if (!cats) {
       res.status(404).json({ message: `No category with ID ${req.params.id} found`})
